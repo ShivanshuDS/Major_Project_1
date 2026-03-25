@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChurnIQ — History</title>
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:         #0f0e17;
+    --bg2:        #14121f;
+    --surface:    rgba(255,255,255,0.04);
+    --surface-md: rgba(255,255,255,0.07);
+    --surface-hi: rgba(255,255,255,0.11);
+    --gold:       #e8c97d;
+    --gold-lt:    #f5e2a8;
+    --gold-dk:    #b89348;
+    --coral:      #f0836a;
+    --lavender:   #b8a6f5;
+    --lavender-dk:#7c68d8;
+    --sage:       #7dc4a8;
+    --text:       #f0ede8;
+    --text-md:    #c8c2b8;
+    --text-sm:    #8c857d;
+    --border:     rgba(255,255,255,0.08);
+    --border-hi:  rgba(232,201,125,0.28);
+    --radius-sm:  10px;
+    --radius-md:  16px;
+    --radius-lg:  24px;
+    --radius-xl:  32px;
+  }
+
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Urbanist', sans-serif;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--gold-dk); border-radius: 99px; }
+
+  /* ─── NAVBAR ─── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 60px;
+    transition: all 0.5s cubic-bezier(0.4,0,0.2,1);
+  }
+  nav.scrolled {
+    padding: 14px 60px;
+    background: rgba(15,14,23,0.82);
+    backdrop-filter: blur(28px) saturate(160%);
+    -webkit-backdrop-filter: blur(28px) saturate(160%);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 4px 48px rgba(0,0,0,0.4);
+  }
+  .nav-logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.6rem; color: var(--text);
+    text-decoration: none; letter-spacing: -0.5px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .nav-logo-mark {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--gold), var(--coral));
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem;
+    box-shadow: 0 4px 20px rgba(232,201,125,0.35);
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+  }
+  .nav-logo:hover .nav-logo-mark { transform: rotate(-8deg) scale(1.08); }
+  .nav-logo span { color: var(--gold); }
+
+  .nav-links { display: flex; gap: 2px; align-items: center; }
+  .nav-links a {
+    color: var(--text-md); text-decoration: none;
+    font-size: 0.9rem; font-weight: 500;
+    padding: 9px 18px; border-radius: var(--radius-sm);
+    transition: all 0.22s ease;
+  }
+  .nav-links a:hover { color: var(--text); background: var(--surface); }
+  .nav-links a.active { color: var(--gold); }
+  .nav-cta {
+    background: linear-gradient(135deg, var(--gold) 0%, var(--coral) 100%) !important;
+    color: #0f0e17 !important;
+    font-weight: 700 !important;
+    border-radius: var(--radius-sm) !important;
+    padding: 10px 22px !important;
+    margin-left: 8px;
+    box-shadow: 0 4px 24px rgba(232,201,125,0.28);
+    transition: all 0.3s ease !important;
+  }
+  .nav-cta:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 36px rgba(232,201,125,0.42) !important;
+    background: linear-gradient(135deg, var(--gold-lt) 0%, var(--coral) 100%) !important;
+  }
+
+  /* ─── SUBTLE BG AURORA ─── */
+  .page-aurora {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+  }
+  .aurora-layer {
+    position: absolute; border-radius: 50%;
+    filter: blur(120px); opacity: 0.25;
+    animation: auroraDrift 22s ease-in-out infinite alternate;
+  }
+  .al-1 {
+    width: 600px; height: 500px;
+    background: radial-gradient(ellipse, rgba(184,166,245,0.4) 0%, transparent 70%);
+    top: -150px; left: -150px; animation-duration: 26s;
+  }
+  .al-2 {
+    width: 500px; height: 450px;
+    background: radial-gradient(ellipse, rgba(232,201,125,0.3) 0%, transparent 70%);
+    top: 30%; right: -120px; animation-duration: 20s; animation-delay: -10s;
+  }
+  .al-3 {
+    width: 400px; height: 350px;
+    background: radial-gradient(ellipse, rgba(240,131,106,0.22) 0%, transparent 70%);
+    bottom: -100px; left: 35%; animation-duration: 18s; animation-delay: -5s;
+  }
+  @keyframes auroraDrift {
+    0%   { transform: translate(0,0) scale(1); }
+    50%  { transform: translate(20px,-15px) scale(1.04); }
+    100% { transform: translate(-10px,20px) scale(0.98); }
+  }
+
+  /* ─── PAGE LAYOUT ─── */
+  .page {
+    position: relative; z-index: 1;
+    padding: 116px 60px 80px;
+    max-width: 1200px; margin: 0 auto;
+  }
+
+  /* ─── PAGE HEADER ─── */
+  .page-header {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 44px; flex-wrap: wrap; gap: 20px;
+  }
+  .page-eyebrow {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--gold); margin-bottom: 12px;
+  }
+  .eyebrow-line { width: 28px; height: 1.5px; background: linear-gradient(90deg, var(--gold), transparent); }
+  .page-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 400; letter-spacing: -1px; color: var(--text);
+    line-height: 1.08;
+  }
+  .page-title em { font-style: italic; color: var(--gold); }
+
+  .header-actions { display: flex; gap: 12px; align-items: center; }
+
+  .btn-outline {
+    padding: 11px 22px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-md);
+    font-family: 'Urbanist', sans-serif;
+    font-size: 0.875rem; font-weight: 600;
+    cursor: pointer; transition: all 0.25s ease;
+    display: inline-flex; align-items: center; gap: 8px;
+    backdrop-filter: blur(8px);
+  }
+  .btn-outline:hover {
+    background: var(--surface-md);
+    color: var(--text);
+    border-color: rgba(255,255,255,0.14);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.25);
+  }
+  .btn-danger {
+    border-color: rgba(240,131,106,0.25) !important;
+    color: var(--coral) !important;
+  }
+  .btn-danger:hover {
+    background: rgba(240,131,106,0.1) !important;
+    border-color: rgba(240,131,106,0.4) !important;
+    color: var(--coral) !important;
+  }
+
+  /* ─── SUMMARY CARDS ─── */
+  .summary-strip {
+    display: grid; grid-template-columns: repeat(4,1fr);
+    gap: 16px; margin-bottom: 32px;
+  }
+  .summary-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 24px 26px;
+    transition: all 0.3s ease;
+    position: relative; overflow: hidden;
+  }
+  .summary-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .summary-card:hover { background: var(--surface-md); transform: translateY(-2px); }
+  .summary-card:hover::before { opacity: 1; }
+
+  .sc-total::before  { background: linear-gradient(90deg, var(--gold), transparent); }
+  .sc-low::before    { background: linear-gradient(90deg, var(--sage), transparent); }
+  .sc-medium::before { background: linear-gradient(90deg, var(--gold), transparent); }
+  .sc-high::before   { background: linear-gradient(90deg, var(--coral), transparent); }
+
+  .s-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.2rem; font-weight: 400; line-height: 1;
+    display: block;
+  }
+  .s-num.total  { color: var(--gold); }
+  .s-num.low    { color: var(--sage); }
+  .s-num.medium { color: var(--gold-lt); }
+  .s-num.high   { color: var(--coral); }
+
+  .s-label {
+    font-size: 0.72rem; color: var(--text-sm);
+    margin-top: 8px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.6px;
+  }
+
+  /* ─── FILTER BAR ─── */
+  .filter-bar {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 20px; flex-wrap: wrap;
+  }
+  .filter-btn {
+    padding: 8px 20px; border-radius: 100px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-sm);
+    font-family: 'Urbanist', sans-serif;
+    font-size: 0.82rem; font-weight: 600;
+    cursor: pointer; transition: all 0.22s ease;
+    letter-spacing: 0.2px;
+  }
+  .filter-btn:hover { background: var(--surface-md); color: var(--text); }
+  .filter-btn.active {
+    background: rgba(232,201,125,0.1);
+    color: var(--gold);
+    border-color: rgba(232,201,125,0.3);
+  }
+  .filter-btn.active-low    { background: rgba(125,196,168,0.1); color: var(--sage);  border-color: rgba(125,196,168,0.3); }
+  .filter-btn.active-medium { background: rgba(245,226,168,0.1); color: var(--gold-lt); border-color: rgba(245,226,168,0.25); }
+  .filter-btn.active-high   { background: rgba(240,131,106,0.1); color: var(--coral); border-color: rgba(240,131,106,0.3); }
+
+  .search-wrap {
+    margin-left: auto; position: relative;
+  }
+  .search-wrap input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 18px 10px 40px;
+    color: var(--text);
+    font-family: 'Urbanist', sans-serif;
+    font-size: 0.875rem; font-weight: 500;
+    outline: none; width: 230px;
+    transition: border-color 0.25s, box-shadow 0.25s;
+  }
+  .search-wrap input::placeholder { color: var(--text-sm); }
+  .search-wrap input:focus {
+    border-color: rgba(232,201,125,0.4);
+    box-shadow: 0 0 0 3px rgba(232,201,125,0.08);
+  }
+  .search-icon {
+    position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+    color: var(--text-sm); font-size: 0.82rem; pointer-events: none;
+  }
+
+  /* ─── TABLE CARD ─── */
+  .table-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    backdrop-filter: blur(16px);
+  }
+
+  table { width: 100%; border-collapse: collapse; }
+
+  thead th {
+    padding: 16px 22px;
+    text-align: left;
+    font-size: 0.7rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1.2px;
+    color: var(--text-sm);
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.18s ease;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface-md); }
+
+  tbody td {
+    padding: 15px 22px;
+    font-size: 0.875rem; font-weight: 500;
+    color: var(--text-md);
+  }
+
+  .td-id {
+    color: var(--text-sm);
+    font-family: 'DM Serif Display', serif;
+    font-size: 0.95rem;
+    font-weight: 400;
+  }
+  .td-date { color: var(--text-md); }
+  .td-val { color: var(--text); font-weight: 600; }
+
+  .td-score {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.15rem; font-weight: 400;
+  }
+  .td-score.low    { color: var(--sage); }
+  .td-score.medium { color: var(--gold-lt); }
+  .td-score.high   { color: var(--coral); }
+
+  .badge {
+    padding: 5px 12px; border-radius: 100px;
+    font-size: 0.7rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.8px;
+    display: inline-block;
+  }
+  .badge-low    { background: rgba(125,196,168,0.14); color: var(--sage); border: 1px solid rgba(125,196,168,0.25); }
+  .badge-medium { background: rgba(245,226,168,0.12); color: var(--gold-lt); border: 1px solid rgba(245,226,168,0.22); }
+  .badge-high   { background: rgba(240,131,106,0.14); color: var(--coral); border: 1px solid rgba(240,131,106,0.28); }
+
+  .del-btn {
+    background: none; border: none;
+    color: var(--text-sm); cursor: pointer;
+    font-size: 0.9rem; padding: 6px 8px;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s ease;
+    line-height: 1;
+  }
+  .del-btn:hover {
+    color: var(--coral);
+    background: rgba(240,131,106,0.1);
+  }
+
+  /* ─── EMPTY STATE ─── */
+  .empty-state {
+    padding: 72px 40px; text-align: center;
+  }
+  .empty-icon {
+    font-size: 3.2rem; margin-bottom: 20px;
+    display: block; opacity: 0.6;
+  }
+  .empty-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.5rem; font-weight: 400;
+    color: var(--text); margin-bottom: 10px;
+  }
+  .empty-sub {
+    color: var(--text-sm); font-size: 0.9rem; line-height: 1.6;
+    max-width: 280px; margin: 0 auto;
+  }
+  .empty-link {
+    display: inline-flex; align-items: center; gap: 10px;
+    margin-top: 28px; padding: 13px 28px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, var(--gold), var(--coral));
+    color: #0f0e17; font-weight: 700; font-size: 0.9rem;
+    text-decoration: none;
+    box-shadow: 0 8px 32px rgba(232,201,125,0.28);
+    transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .empty-link:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 16px 48px rgba(232,201,125,0.4);
+  }
+
+  /* ─── ANIMATIONS ─── */
+  .fade-in { animation: fadeIn 0.5s ease both; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 900px) {
+    nav { padding: 16px 24px; }
+    nav.scrolled { padding: 12px 24px; }
+    .nav-links { display: none; }
+    .page { padding: 100px 24px 60px; }
+    .summary-strip { grid-template-columns: 1fr 1fr; }
+    .page-header { flex-direction: column; align-items: flex-start; }
+    table thead th:nth-child(4),
+    table tbody td:nth-child(4) { display: none; }
+    .al-1, .al-2, .al-3 { opacity: 0.15; }
+  }
+  @media (max-width: 600px) {
+    .summary-strip { grid-template-columns: 1fr 1fr; }
+    .search-wrap { width: 100%; }
+    .search-wrap input { width: 100%; }
+    .filter-bar { gap: 8px; }
+    table thead th:nth-child(5),
+    table tbody td:nth-child(5) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── AURORA BG ── -->
+<div class="page-aurora">
+  <div class="aurora-layer al-1"></div>
+  <div class="aurora-layer al-2"></div>
+  <div class="aurora-layer al-3"></div>
+</div>
+
+<!-- ── NAV ── -->
+<nav id="mainNav">
+  <a class="nav-logo" href="/">
+    <div class="nav-logo-mark">◆</div>
+    Churn<span>IQ</span>
+  </a>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/predict">Predict</a>
+    <a href="/history" class="active">History</a>
+    <a href="/contact">Contact</a>
+    <a href="/predict" class="nav-cta">Get Started →</a>
+  </div>
+</nav>
+
+<!-- ── PAGE ── -->
+<div class="page">
+
+  <!-- Header -->
+  <div class="page-header fade-in">
+    <div>
+      <div class="page-eyebrow"><div class="eyebrow-line"></div>Analytics</div>
+      <div class="page-title">Prediction <em>History</em></div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-outline" onclick="exportCSV()">📤 Export CSV</button>
+      <button class="btn-outline btn-danger" onclick="clearAll()">🗑 Clear All</button>
+    </div>
+  </div>
+
+  <!-- Summary Strip -->
+  <div class="summary-strip fade-in" style="animation-delay:0.08s">
+    <div class="summary-card sc-total">
+      <span class="s-num total" id="sTotal">0</span>
+      <div class="s-label">Total Predictions</div>
+    </div>
+    <div class="summary-card sc-low">
+      <span class="s-num low" id="sLow">0</span>
+      <div class="s-label">Low Risk</div>
+    </div>
+    <div class="summary-card sc-medium">
+      <span class="s-num medium" id="sMedium">0</span>
+      <div class="s-label">Medium Risk</div>
+    </div>
+    <div class="summary-card sc-high">
+      <span class="s-num high" id="sHigh">0</span>
+      <div class="s-label">High Risk</div>
+    </div>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar fade-in" style="animation-delay:0.14s">
+    <button class="filter-btn active" data-filter="all" onclick="setFilter('all',this)">All</button>
+    <button class="filter-btn" data-filter="low"    onclick="setFilter('low',this)">● Low</button>
+    <button class="filter-btn" data-filter="medium" onclick="setFilter('medium',this)">● Medium</button>
+    <button class="filter-btn" data-filter="high"   onclick="setFilter('high',this)">● High</button>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchBox" placeholder="Search predictions…" oninput="renderTable()">
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-card fade-in" style="animation-delay:0.2s">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Date &amp; Time</th>
+          <th>Tenure</th>
+          <th>Monthly ($)</th>
+          <th>Total ($)</th>
+          <th>Score</th>
+          <th>Risk</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="historyBody"></tbody>
+    </table>
+    <div class="empty-state" id="emptyState" style="display:none">
+      <span class="empty-icon">📭</span>
+      <div class="empty-title">No predictions yet</div>
+      <div class="empty-sub">Run your first prediction to see it appear here.</div>
+      <a href="/predict" class="empty-link">⚡ Run Prediction</a>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+  /* ── Navbar scroll ── */
+  const nav = document.getElementById('mainNav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 40);
+  }, { passive: true });
+
+  /* ── Filter state ── */
+  let currentFilter = 'all';
+
+  function setFilter(f, btn) {
+    currentFilter = f;
+    document.querySelectorAll('.filter-btn').forEach(b => {
+      b.classList.remove('active','active-low','active-medium','active-high');
+    });
+    if (f === 'all')    btn.classList.add('active');
+    if (f === 'low')    btn.classList.add('active-low');
+    if (f === 'medium') btn.classList.add('active-medium');
+    if (f === 'high')   btn.classList.add('active-high');
+    renderTable();
+  }
+
+  function getHistory() {
+    return JSON.parse(localStorage.getItem('churnHistory') || '[]');
+  }
+
+  function renderTable() {
+    const history = getHistory();
+    const search  = document.getElementById('searchBox').value.toLowerCase();
+
+    const filtered = history.filter(p => {
+      const matchFilter = currentFilter === 'all' || p.labelClass === currentFilter;
+      const matchSearch = !search ||
+        String(p.tenure).includes(search)  ||
+        String(p.monthly).includes(search) ||
+        p.level.toLowerCase().includes(search);
+      return matchFilter && matchSearch;
+    });
+
+    /* Summary counts */
+    document.getElementById('sTotal').textContent  = history.length;
+    document.getElementById('sLow').textContent    = history.filter(p => p.labelClass==='low').length;
+    document.getElementById('sMedium').textContent = history.filter(p => p.labelClass==='medium').length;
+    document.getElementById('sHigh').textContent   = history.filter(p => p.labelClass==='high').length;
+
+    const body  = document.getElementById('historyBody');
+    const empty = document.getElementById('emptyState');
+
+    if (!filtered.length) {
+      body.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+
+    body.innerHTML = filtered.map(p => {
+      const idx = history.indexOf(p);
+      return `
+        <tr>
+          <td class="td-id">${String(idx+1).padStart(3,'0')}</td>
+          <td class="td-date">${p.time || '—'}</td>
+          <td class="td-val">${p.tenure} mo</td>
+          <td class="td-val">$${Number(p.monthly).toFixed(2)}</td>
+          <td class="td-val">$${Number(p.total).toFixed(2)}</td>
+          <td class="td-score ${p.labelClass}">${p.pct}%</td>
+          <td><span class="badge badge-${p.labelClass}">${p.level}</span></td>
+          <td><button class="del-btn" onclick="deleteItem(${idx})" title="Delete">✕</button></td>
+        </tr>`;
+    }).join('');
+  }
+
+  function deleteItem(idx) {
+    const h = getHistory();
+    h.splice(idx, 1);
+    localStorage.setItem('churnHistory', JSON.stringify(h));
+    renderTable();
+  }
+
+  function clearAll() {
+    if (confirm('Clear all prediction history?')) {
+      localStorage.removeItem('churnHistory');
+      renderTable();
+    }
+  }
+
+  function exportCSV() {
+    const h = getHistory();
+    if (!h.length) { alert('No history to export.'); return; }
+    const header = 'ID,Date,Tenure,Monthly,Total,Score,Risk';
+    const rows   = h.map((p,i) => `${i+1},"${p.time}",${p.tenure},${p.monthly},${p.total},${p.pct}%,${p.level}`);
+    const csv    = [header,...rows].join('\n');
+    const a = document.createElement('a');
+    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    a.download = 'churniq_history.csv';
+    a.click();
+  }
+
+  renderTable();
+</script>
+</body>
+</html>

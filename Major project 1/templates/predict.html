@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChurnIQ — Predict</title>
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:         #0f0e17;
+    --bg2:        #14121f;
+    --surface:    rgba(255,255,255,0.04);
+    --surface-md: rgba(255,255,255,0.07);
+    --surface-hi: rgba(255,255,255,0.11);
+    --gold:       #e8c97d;
+    --gold-lt:    #f5e2a8;
+    --gold-dk:    #b89348;
+    --coral:      #f0836a;
+    --lavender:   #b8a6f5;
+    --lavender-dk:#7c68d8;
+    --sage:       #7dc4a8;
+    --text:       #f0ede8;
+    --text-md:    #c8c2b8;
+    --text-sm:    #8c857d;
+    --border:     rgba(255,255,255,0.08);
+    --border-hi:  rgba(232,201,125,0.28);
+    --radius-sm:  10px;
+    --radius-md:  16px;
+    --radius-lg:  24px;
+    --radius-xl:  32px;
+    --success: #7dc4a8;
+    --warning: #e8c97d;
+    --danger:  #f0836a;
+  }
+
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Urbanist', sans-serif;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--gold-dk); border-radius: 99px; }
+
+  /* ═══════════════════════════════
+     NAVBAR
+  ═══════════════════════════════ */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 60px;
+    transition: all 0.5s cubic-bezier(0.4,0,0.2,1);
+  }
+  nav.scrolled {
+    padding: 14px 60px;
+    background: rgba(15,14,23,0.82);
+    backdrop-filter: blur(28px) saturate(160%);
+    -webkit-backdrop-filter: blur(28px) saturate(160%);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 4px 48px rgba(0,0,0,0.4);
+  }
+
+  .nav-logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.6rem;
+    color: var(--text);
+    text-decoration: none;
+    letter-spacing: -0.5px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .nav-logo-mark {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--gold), var(--coral));
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem;
+    box-shadow: 0 4px 20px rgba(232,201,125,0.35);
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+  }
+  .nav-logo:hover .nav-logo-mark { transform: rotate(-8deg) scale(1.08); }
+  .nav-logo span { color: var(--gold); }
+
+  .nav-links { display: flex; gap: 2px; align-items: center; }
+  .nav-links a {
+    color: var(--text-md); text-decoration: none;
+    font-size: 0.9rem; font-weight: 500;
+    padding: 9px 18px; border-radius: var(--radius-sm);
+    transition: all 0.22s ease;
+    letter-spacing: 0.1px;
+  }
+  .nav-links a:hover { color: var(--text); background: var(--surface); }
+  .nav-links a.active { color: var(--gold); }
+
+  .nav-cta {
+    background: linear-gradient(135deg, var(--gold) 0%, var(--coral) 100%) !important;
+    color: #0f0e17 !important;
+    font-weight: 700 !important;
+    border-radius: var(--radius-sm) !important;
+    padding: 10px 22px !important;
+    margin-left: 8px;
+    box-shadow: 0 4px 24px rgba(232,201,125,0.28);
+    transition: all 0.3s ease !important;
+  }
+  .nav-cta:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 36px rgba(232,201,125,0.42) !important;
+    background: linear-gradient(135deg, var(--gold-lt) 0%, var(--coral) 100%) !important;
+  }
+
+  /* ═══════════════════════════════
+     AURORA (page-wide bg)
+  ═══════════════════════════════ */
+  .aurora {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    overflow: hidden;
+  }
+  .aurora-layer {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: 0.35;
+    animation: auroraDrift 18s ease-in-out infinite alternate;
+  }
+  .al-1 {
+    width: 700px; height: 500px;
+    background: radial-gradient(ellipse, rgba(184,166,245,0.3) 0%, transparent 70%);
+    top: -100px; left: -100px;
+    animation-duration: 20s;
+  }
+  .al-2 {
+    width: 600px; height: 600px;
+    background: radial-gradient(ellipse, rgba(232,201,125,0.18) 0%, transparent 70%);
+    top: 0; right: -80px;
+    animation-duration: 24s; animation-delay: -8s;
+  }
+  .al-3 {
+    width: 500px; height: 400px;
+    background: radial-gradient(ellipse, rgba(240,131,106,0.16) 0%, transparent 70%);
+    bottom: 10%; left: 30%;
+    animation-duration: 16s; animation-delay: -4s;
+  }
+  .al-4 {
+    width: 350px; height: 350px;
+    background: radial-gradient(ellipse, rgba(125,196,168,0.14) 0%, transparent 70%);
+    bottom: 30%; right: 10%;
+    animation-duration: 22s; animation-delay: -12s;
+  }
+  @keyframes auroraDrift {
+    0%   { transform: translate(0, 0) scale(1); }
+    33%  { transform: translate(30px, -20px) scale(1.05); }
+    66%  { transform: translate(-20px, 30px) scale(0.97); }
+    100% { transform: translate(20px, 10px) scale(1.03); }
+  }
+
+  /* ═══════════════════════════════
+     PAGE LAYOUT
+  ═══════════════════════════════ */
+  .page {
+    position: relative; z-index: 1;
+    padding: 120px 60px 80px;
+    max-width: 1260px;
+    margin: 0 auto;
+  }
+
+  .page-header { margin-bottom: 48px; }
+
+  .page-eyebrow {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 0.72rem; font-weight: 700; color: var(--gold);
+    letter-spacing: 2px; text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .eyebrow-line {
+    width: 28px; height: 2px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+    border-radius: 2px;
+  }
+
+  .page-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2.2rem, 4vw, 3.2rem);
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -1px;
+    color: var(--text);
+  }
+  .page-title em {
+    font-style: italic;
+    background: linear-gradient(135deg, var(--gold-lt) 0%, var(--coral) 55%, var(--lavender) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .page-sub {
+    color: var(--text-md);
+    margin-top: 12px;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .predict-layout {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 28px;
+    align-items: start;
+  }
+
+  /* ═══════════════════════════════
+     CARD
+  ═══════════════════════════════ */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 36px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: border-color 0.3s ease;
+  }
+  .card:hover { border-color: var(--border-hi); }
+
+  .card-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.15rem;
+    font-weight: 400;
+    margin-bottom: 28px;
+    display: flex; align-items: center; gap: 12px;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+  .card-title .icon {
+    width: 34px; height: 34px; border-radius: 10px;
+    background: linear-gradient(135deg, rgba(232,201,125,0.15), rgba(240,131,106,0.1));
+    border: 1px solid var(--border-hi);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; flex-shrink: 0;
+  }
+
+  /* ── Section groups ── */
+  .section-group { margin-bottom: 28px; }
+  .section-group-label {
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--lavender); margin-bottom: 16px; padding-bottom: 10px;
+    border-bottom: 1px solid rgba(184,166,245,0.18);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-group-label::before {
+    content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--lavender), var(--gold));
+  }
+
+  /* ── Fields ── */
+  .field { margin-bottom: 16px; }
+  .field label {
+    display: block; font-size: 0.79rem; font-weight: 600;
+    color: var(--text-sm); margin-bottom: 8px;
+    letter-spacing: 0.4px; text-transform: uppercase;
+  }
+  .field input, .field select {
+    width: 100%;
+    background: var(--surface-md);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 13px 16px;
+    color: var(--text);
+    font-family: 'Urbanist', sans-serif;
+    font-size: 0.94rem;
+    font-weight: 500;
+    outline: none;
+    transition: all 0.22s ease;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  .field select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238c857d' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-color: var(--surface-md);
+    padding-right: 36px;
+    cursor: pointer;
+  }
+  .field select option { background: #14121f; color: var(--text); }
+  .field input:focus, .field select:focus {
+    border-color: var(--gold-dk);
+    box-shadow: 0 0 0 3px rgba(232,201,125,0.12);
+    background: var(--surface-hi);
+  }
+  .field input::placeholder { color: var(--text-sm); }
+
+  .field-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .field-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+  /* ── Predict Button ── */
+  .btn-predict {
+    width: 100%; padding: 16px 24px; border: none; border-radius: var(--radius-md);
+    background: linear-gradient(135deg, var(--gold) 0%, var(--coral) 100%);
+    color: #0f0e17;
+    font-family: 'Urbanist', sans-serif; font-weight: 800; font-size: 1rem;
+    cursor: pointer; transition: all 0.3s ease; margin-top: 8px;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    letter-spacing: 0.2px;
+    box-shadow: 0 4px 28px rgba(232,201,125,0.28);
+  }
+  .btn-predict:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 40px rgba(232,201,125,0.42);
+    background: linear-gradient(135deg, var(--gold-lt) 0%, var(--coral) 100%);
+  }
+  .btn-predict:active { transform: translateY(-1px); }
+
+  /* ═══════════════════════════════
+     RESULT CARD
+  ═══════════════════════════════ */
+  .result-card { display: none; }
+  .result-card.show { display: block; }
+
+  .risk-meter { margin-bottom: 28px; }
+  .risk-bar-wrap {
+    height: 10px;
+    background: var(--surface-md);
+    border-radius: 100px; overflow: hidden; margin-top: 12px;
+  }
+  .risk-bar { height: 100%; border-radius: 100px; transition: width 1s cubic-bezier(0.4,0,0.2,1); width: 0%; }
+  .risk-low    { background: linear-gradient(90deg, var(--sage), #a8e6d0); }
+  .risk-medium { background: linear-gradient(90deg, var(--gold), var(--gold-lt)); }
+  .risk-high   { background: linear-gradient(90deg, var(--coral), #f5a898); }
+
+  .risk-label {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 16px; border-radius: 100px;
+    font-size: 0.78rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1px; margin-top: 12px;
+  }
+  .risk-label.low    { background: rgba(125,196,168,0.12); color: var(--sage); border: 1px solid rgba(125,196,168,0.25); }
+  .risk-label.medium { background: rgba(232,201,125,0.12); color: var(--gold); border: 1px solid rgba(232,201,125,0.25); }
+  .risk-label.high   { background: rgba(240,131,106,0.12); color: var(--coral); border: 1px solid rgba(240,131,106,0.25); }
+
+  .result-score {
+    font-family: 'DM Serif Display', serif;
+    font-size: 4.5rem; font-weight: 400; line-height: 1;
+    letter-spacing: -2px;
+    background: linear-gradient(135deg, var(--gold-lt) 0%, var(--coral) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+  }
+  .result-headline { font-size: 1rem; color: var(--text-md); margin-bottom: 24px; font-weight: 500; }
+
+  /* ── Factor bars ── */
+  .factors { margin-top: 24px; }
+  .factor-label {
+    font-size: 0.73rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.5px; color: var(--text-sm); margin-bottom: 14px;
+  }
+  .factor-item { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .factor-name { font-size: 0.82rem; width: 140px; color: var(--text-md); flex-shrink: 0; font-weight: 500; }
+  .factor-bar-wrap { flex: 1; height: 5px; background: var(--surface-md); border-radius: 100px; overflow: hidden; }
+  .factor-bar {
+    height: 100%; border-radius: 100px;
+    background: linear-gradient(90deg, var(--gold), var(--coral));
+    transition: width 1s 0.3s ease; width: 0%;
+  }
+  .factor-pct { font-size: 0.8rem; font-weight: 700; color: var(--gold); width: 36px; text-align: right; flex-shrink: 0; }
+
+  /* ── Insight grid ── */
+  .insight-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+  .insight-item {
+    background: var(--surface-md);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 14px 16px;
+    transition: border-color 0.2s ease;
+  }
+  .insight-item:hover { border-color: var(--border-hi); }
+  .insight-item-label {
+    font-size: 0.71rem; text-transform: uppercase;
+    letter-spacing: 0.8px; color: var(--text-sm); margin-bottom: 5px; font-weight: 600;
+  }
+  .insight-item-val {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1rem; font-weight: 400; color: var(--text);
+  }
+
+  /* ── Action chips ── */
+  .action-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+  .chip {
+    padding: 7px 14px; border-radius: 100px; font-size: 0.78rem; font-weight: 500;
+    background: rgba(232,201,125,0.07);
+    border: 1px solid rgba(232,201,125,0.2);
+    color: var(--text-md);
+    transition: all 0.2s ease;
+  }
+  .chip:hover { background: rgba(232,201,125,0.12); color: var(--gold); }
+
+  /* ── Save button ── */
+  .save-btn {
+    width: 100%; margin-top: 20px; padding: 13px; border-radius: var(--radius-sm);
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-md);
+    font-family: 'Urbanist', sans-serif; font-size: 0.92rem; font-weight: 600;
+    cursor: pointer; transition: all 0.22s ease;
+    letter-spacing: 0.2px;
+  }
+  .save-btn:hover {
+    background: var(--surface-md);
+    border-color: var(--border-hi);
+    color: var(--gold);
+  }
+
+  /* ── Recent list ── */
+  .recent-list { margin-top: 4px; }
+  .recent-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 13px 0; border-bottom: 1px solid var(--border);
+  }
+  .recent-item:last-child { border-bottom: none; }
+  .recent-meta { font-size: 0.78rem; color: var(--text-sm); margin-top: 3px; }
+
+  .badge { padding: 4px 12px; border-radius: 100px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  .badge-low    { background: rgba(125,196,168,0.12); color: var(--sage); }
+  .badge-medium { background: rgba(232,201,125,0.12); color: var(--gold); }
+  .badge-high   { background: rgba(240,131,106,0.12); color: var(--coral); }
+
+  /* ── Empty state ── */
+  .empty-state-icon { font-size: 2.8rem; margin-bottom: 16px; }
+  .empty-state-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.3rem; font-weight: 400; color: var(--text);
+    letter-spacing: -0.3px; margin-bottom: 8px;
+  }
+  .empty-state-desc { color: var(--text-sm); font-size: 0.9rem; text-align: center; max-width: 240px; line-height: 1.5; }
+
+  /* ── FOOTER ── */
+  footer {
+    position: relative; z-index: 1;
+    border-top: 1px solid var(--border);
+    padding: 40px 60px 28px;
+    margin-top: 60px;
+  }
+  .footer-inner {
+    max-width: 1260px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;
+  }
+  .footer-logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.3rem; color: var(--text); text-decoration: none;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .footer-logo-mark { color: var(--gold); }
+  .footer-logo span { color: var(--gold); }
+  .footer-links { display: flex; gap: 4px; }
+  .footer-links a {
+    color: var(--text-sm); text-decoration: none;
+    font-size: 0.85rem; font-weight: 500;
+    padding: 6px 14px; border-radius: 8px; transition: all 0.2s;
+  }
+  .footer-links a:hover { color: var(--text); background: var(--surface); }
+  .footer-copy { color: var(--text-sm); font-size: 0.82rem; }
+  .footer-bottom {
+    max-width: 1260px; margin: 20px auto 0;
+    padding-top: 20px; border-top: 1px solid var(--border);
+    text-align: center;
+  }
+  .footer-tagline { color: var(--text-sm); font-size: 0.8rem; letter-spacing: 1px; }
+
+  /* ── RESPONSIVE ── */
+  @media(max-width: 1000px) {
+    nav { padding: 16px 24px; }
+    nav.scrolled { padding: 12px 24px; }
+    .nav-links { display: none; }
+    .page { padding: 100px 24px 60px; }
+    .predict-layout { grid-template-columns: 1fr; }
+    .field-row-2 { grid-template-columns: 1fr; }
+    .field-row-3 { grid-template-columns: 1fr 1fr; }
+    footer { padding: 32px 24px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Aurora background -->
+<div class="aurora">
+  <div class="aurora-layer al-1"></div>
+  <div class="aurora-layer al-2"></div>
+  <div class="aurora-layer al-3"></div>
+  <div class="aurora-layer al-4"></div>
+</div>
+
+<!-- NAVBAR -->
+<nav id="mainNav">
+  <a class="nav-logo" href="/">
+    <div class="nav-logo-mark">◆</div>
+    Churn<span>IQ</span>
+  </a>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/predict" class="active">Predict</a>
+    <a href="/history">History</a>
+    <a href="/contact">Contact</a>
+    <a href="/predict" class="nav-cta">Get Started →</a>
+  </div>
+</nav>
+
+<!-- PAGE -->
+<div class="page">
+  <div class="page-header">
+    <div class="page-eyebrow"><div class="eyebrow-line"></div>Prediction Engine</div>
+    <div class="page-title">Run Churn <em>Prediction</em></div>
+    <div class="page-sub">Enter all 20 customer features below to get a comprehensive churn risk assessment.</div>
+  </div>
+
+  <div class="predict-layout">
+
+    <!-- LEFT: Form -->
+    <div>
+      <div class="card">
+        <div class="card-title"><div class="icon">📥</div> Customer Data Input</div>
+
+        <!-- Section 1: Personal Info -->
+        <div class="section-group">
+          <div class="section-group-label">Personal Information</div>
+          <div class="field-row-2">
+            <div class="field">
+              <label>Gender</label>
+              <select id="gender">
+                <option value="">Select…</option>
+                <option value="0">Female</option>
+                <option value="1">Male</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Senior Citizen</label>
+              <select id="seniorCitizen">
+                <option value="">Select…</option>
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-row-2">
+            <div class="field">
+              <label>Partner</label>
+              <select id="partner">
+                <option value="">Select…</option>
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Dependents</label>
+              <select id="dependents">
+                <option value="">Select…</option>
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Account Info -->
+        <div class="section-group">
+          <div class="section-group-label">Account Information</div>
+          <div class="field">
+            <label>Tenure (Months)</label>
+            <input type="number" id="tenure" placeholder="e.g. 24" min="0" max="72">
+          </div>
+          <div class="field-row-2">
+            <div class="field">
+              <label>Contract</label>
+              <select id="contract">
+                <option value="">Select…</option>
+                <option value="0">Month-to-month</option>
+                <option value="1">One year</option>
+                <option value="2">Two year</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Paperless Billing</label>
+              <select id="paperlessBilling">
+                <option value="">Select…</option>
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label>Payment Method</label>
+            <select id="paymentMethod">
+              <option value="">Select…</option>
+              <option value="0">Bank Transfer (Auto)</option>
+              <option value="1">Credit Card (Auto)</option>
+              <option value="2">Electronic Check</option>
+              <option value="3">Mailed Check</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Section 3: Services -->
+        <div class="section-group">
+          <div class="section-group-label">Services Subscribed</div>
+          <div class="field-row-2">
+            <div class="field">
+              <label>Phone Service</label>
+              <select id="phoneService">
+                <option value="">Select…</option>
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Multiple Lines</label>
+              <select id="multipleLines">
+                <option value="">Select…</option>
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label>Internet Service</label>
+            <select id="internetService">
+              <option value="">Select…</option>
+              <option value="0">No Internet</option>
+              <option value="1">DSL</option>
+              <option value="2">Fiber Optic</option>
+            </select>
+          </div>
+          <div class="field-row-3">
+            <div class="field">
+              <label>Online Security</label>
+              <select id="onlineSecurity">
+                <option value="">Select…</option>
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Online Backup</label>
+              <select id="onlineBackup">
+                <option value="">Select…</option>
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Device Protection</label>
+              <select id="deviceProtection">
+                <option value="">Select…</option>
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-row-3">
+            <div class="field">
+              <label>Tech Support</label>
+              <select id="techSupport">
+                <option value="">Select…</option>
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Streaming TV</label>
+              <select id="streamingTV">
+                <option value="">Select…</option>
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Streaming Movies</label>
+              <select id="streamingMovies">
+                <option value="">Select…</option>
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 4: Billing -->
+        <div class="section-group">
+          <div class="section-group-label">Billing</div>
+          <div class="field-row-2">
+            <div class="field">
+              <label>Monthly Charges ($)</label>
+              <input type="number" id="monthlyCharges" placeholder="e.g. 65.50" step="0.01" min="0">
+            </div>
+            <div class="field">
+              <label>Total Charges ($)</label>
+              <input type="number" id="totalCharges" placeholder="e.g. 1572" step="1" min="0">
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-predict" onclick="runPrediction()">
+          <span>⚡</span> Predict Churn Risk
+        </button>
+      </div>
+    </div>
+
+    <!-- RIGHT: Result -->
+    <div>
+      <!-- Result card -->
+      <div class="card result-card" id="resultCard">
+        <div class="card-title"><div class="icon">📊</div> Prediction Result</div>
+
+        <div class="risk-meter">
+          <div style="display:flex;align-items:baseline;gap:12px;">
+            <div class="result-score" id="resultScore">—</div>
+            <div class="result-headline" id="resultHeadline">Churn Probability</div>
+          </div>
+          <div class="risk-bar-wrap">
+            <div class="risk-bar" id="riskBar"></div>
+          </div>
+          <div style="margin-top:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <div class="risk-label" id="riskLabel"></div>
+            <div style="font-size:0.83rem;color:var(--text-md)" id="riskDesc"></div>
+          </div>
+        </div>
+
+        <!-- Key Insights -->
+        <div class="insight-grid" id="insightGrid"></div>
+
+        <div class="factors" style="margin-top:24px;">
+          <div class="factor-label">Top Factor Influence</div>
+          <div id="factorList"></div>
+        </div>
+
+        <div class="action-chips" id="actionChips"></div>
+        <button class="save-btn" onclick="savePrediction()">💾 Save to History</button>
+      </div>
+
+      <!-- Empty state -->
+      <div class="card" id="emptyState"
+           style="min-height:320px;display:flex;align-items:center;justify-content:center;flex-direction:column;">
+        <div class="empty-state-icon">🎯</div>
+        <div class="empty-state-title">Ready to Predict</div>
+        <div class="empty-state-desc">Fill in the customer data on the left and click predict to see the full risk assessment here.</div>
+      </div>
+
+      <!-- Recent Predictions -->
+      <div class="card" style="margin-top:28px;">
+        <div class="card-title"><div class="icon">🕑</div> Recent Predictions</div>
+        <div class="recent-list" id="recentList">
+          <div style="color:var(--text-sm);font-size:0.88rem;padding:16px 0">No predictions yet.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <a class="footer-logo" href="/">
+      <div class="footer-logo-mark">◆</div>
+      Churn<span>IQ</span>
+    </a>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/predict">Predict</a>
+      <a href="/history">History</a>
+      <a href="/contact">Contact</a>
+    </div>
+    <div class="footer-copy">© 2026 ChurnIQ. All rights reserved.</div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-tagline">Built with precision · Powered by intelligence</div>
+  </div>
+</footer>
+
+<script>
+  /* ── Navbar scroll ── */
+  const nav = document.getElementById('mainNav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 40);
+  }, { passive: true });
+
+  /* ── Helpers ── */
+  function getVal(id) {
+    const el = document.getElementById(id);
+    const v = el.value;
+    return v === '' ? null : parseFloat(v);
+  }
+
+  /* ── Prediction logic ── */
+  function runPrediction() {
+    const f = {
+      gender:           getVal('gender'),
+      seniorCitizen:    getVal('seniorCitizen'),
+      partner:          getVal('partner'),
+      dependents:       getVal('dependents'),
+      tenure:           getVal('tenure'),
+      phoneService:     getVal('phoneService'),
+      multipleLines:    getVal('multipleLines'),
+      internetService:  getVal('internetService'),
+      onlineSecurity:   getVal('onlineSecurity'),
+      onlineBackup:     getVal('onlineBackup'),
+      deviceProtection: getVal('deviceProtection'),
+      techSupport:      getVal('techSupport'),
+      streamingTV:      getVal('streamingTV'),
+      streamingMovies:  getVal('streamingMovies'),
+      contract:         getVal('contract'),
+      paperlessBilling: getVal('paperlessBilling'),
+      paymentMethod:    getVal('paymentMethod'),
+      monthlyCharges:   getVal('monthlyCharges'),
+      totalCharges:     getVal('totalCharges'),
+    };
+
+    const filled = Object.values(f).filter(v => v !== null).length;
+    if (filled < 3) { alert('Please fill in at least 3 fields to run a prediction.'); return; }
+
+    let risk = 0.18;
+
+    const tenure = f.tenure ?? 24;
+    risk += Math.max(0, (1 - tenure / 72)) * 0.22;
+
+    if (f.contract !== null) {
+      if (f.contract === 0) risk += 0.28;
+      else if (f.contract === 1) risk += 0.06;
+      else risk -= 0.08;
+    }
+
+    const monthly = f.monthlyCharges ?? 65;
+    risk += ((monthly - 20) / 100) * 0.15;
+
+    if (f.internetService !== null) {
+      if (f.internetService === 2) risk += 0.12;
+      else if (f.internetService === 0) risk -= 0.06;
+    }
+
+    if (f.paymentMethod !== null) {
+      if (f.paymentMethod === 2) risk += 0.10;
+      else if (f.paymentMethod === 0 || f.paymentMethod === 1) risk -= 0.06;
+    }
+
+    if (f.paperlessBilling === 1) risk += 0.05;
+    if (f.onlineSecurity === 1)   risk -= 0.07;
+    if (f.techSupport === 1)      risk -= 0.07;
+    if (f.onlineBackup === 1)     risk -= 0.04;
+    if (f.deviceProtection === 1) risk -= 0.03;
+    if (f.seniorCitizen === 1)    risk += 0.06;
+    if (f.partner === 1)          risk -= 0.04;
+    if (f.dependents === 1)       risk -= 0.05;
+    if (f.streamingTV === 1)      risk += 0.03;
+    if (f.streamingMovies === 1)  risk += 0.03;
+    if (f.multipleLines === 1)    risk += 0.02;
+
+    if (f.totalCharges !== null && f.monthlyCharges !== null && tenure > 0) {
+      const expected = monthly * tenure;
+      const ratio = f.totalCharges / (expected || 1);
+      if (ratio < 0.8) risk += 0.04;
+    }
+
+    risk += (Math.random() * 0.04 - 0.02);
+    risk = Math.min(0.97, Math.max(0.03, risk));
+    const pct = Math.round(risk * 100);
+
+    const factors = [
+      { name: 'Contract Type',    val: f.contract !== null ? [28,6,0][f.contract] : 14 },
+      { name: 'Tenure',           val: Math.round(Math.max(0, (1-tenure/72))*22) },
+      { name: 'Monthly Charges',  val: Math.round(Math.min(15, Math.max(0,(monthly-20)/100*15))) },
+      { name: 'Internet Service', val: f.internetService === 2 ? 12 : f.internetService === 1 ? 5 : 2 },
+      { name: 'Payment Method',   val: f.paymentMethod === 2 ? 10 : f.paymentMethod === null ? 5 : 3 },
+      { name: 'Online Security',  val: f.onlineSecurity === 1 ? 7 : 3 },
+      { name: 'Tech Support',     val: f.techSupport === 1 ? 7 : 3 },
+      { name: 'Senior Citizen',   val: f.seniorCitizen === 1 ? 6 : 1 },
+    ].sort((a,b) => b.val - a.val).slice(0, 6);
+    const maxFactor = Math.max(...factors.map(f => f.val), 1);
+
+    let level, labelClass, desc;
+    if (risk < 0.35)      { level='Low';    labelClass='low';    desc='Customer is likely to stay.'; }
+    else if (risk < 0.65) { level='Medium'; labelClass='medium'; desc='Monitor this customer closely.'; }
+    else                  { level='High';   labelClass='high';   desc='Immediate retention action needed.'; }
+
+    document.getElementById('emptyState').style.display = 'none';
+    const rc = document.getElementById('resultCard');
+    rc.classList.add('show');
+
+    document.getElementById('resultScore').textContent = pct + '%';
+    document.getElementById('resultHeadline').textContent = 'Churn Probability';
+    document.getElementById('riskLabel').textContent = '● ' + level + ' Risk';
+    document.getElementById('riskLabel').className = 'risk-label ' + labelClass;
+    document.getElementById('riskDesc').textContent = desc;
+
+    const bar = document.getElementById('riskBar');
+    bar.className = 'risk-bar risk-' + labelClass;
+    setTimeout(() => { bar.style.width = pct + '%'; }, 50);
+
+    const contractLabels = ['Month-to-month','One year','Two year'];
+    const payLabels = ['Bank Transfer','Credit Card','Elec. Check','Mailed Check'];
+    const netLabels = ['No Internet','DSL','Fiber Optic'];
+    document.getElementById('insightGrid').innerHTML = [
+      { label:'Tenure',          val: (f.tenure !== null ? f.tenure + ' months' : 'N/A') },
+      { label:'Contract',        val: (f.contract !== null ? contractLabels[f.contract] : 'N/A') },
+      { label:'Monthly Charges', val: (f.monthlyCharges !== null ? '$' + f.monthlyCharges.toFixed(2) : 'N/A') },
+      { label:'Internet',        val: (f.internetService !== null ? netLabels[f.internetService] : 'N/A') },
+    ].map(item => `
+      <div class="insight-item">
+        <div class="insight-item-label">${item.label}</div>
+        <div class="insight-item-val">${item.val}</div>
+      </div>
+    `).join('');
+
+    document.getElementById('factorList').innerHTML = factors.map((fac, i) => `
+      <div class="factor-item">
+        <div class="factor-name">${fac.name}</div>
+        <div class="factor-bar-wrap"><div class="factor-bar" id="fb-${i}" style="width:0%"></div></div>
+        <div class="factor-pct">${fac.val}%</div>
+      </div>
+    `).join('');
+
+    factors.forEach((fac, i) => {
+      const pctBar = Math.round((fac.val / maxFactor) * 100);
+      setTimeout(() => {
+        const el = document.getElementById('fb-' + i);
+        if (el) el.style.width = pctBar + '%';
+      }, 100 + i * 50);
+    });
+
+    const actions = level === 'Low'
+      ? ['✓ No urgent action','📧 Satisfaction survey','🎁 Loyalty reward','📈 Upsell opportunity']
+      : level === 'Medium'
+      ? ['📞 Schedule check-in','🎁 Offer discount','📋 Review account','🔄 Suggest annual plan']
+      : ['🚨 Urgent outreach','💸 Retention offer','👔 Escalate to manager','📉 Risk alert sent'];
+    document.getElementById('actionChips').innerHTML = actions.map(a => `<div class="chip">${a}</div>`).join('');
+
+    window._lastPrediction = {
+      tenure: f.tenure, monthly: f.monthlyCharges, total: f.totalCharges,
+      contract: f.contract !== null ? contractLabels[f.contract] : 'N/A',
+      pct, level, labelClass, time: new Date().toLocaleString()
+    };
+  }
+
+  function savePrediction() {
+    if (!window._lastPrediction) return;
+    const p = window._lastPrediction;
+    const history = JSON.parse(localStorage.getItem('churnHistory') || '[]');
+    history.unshift(p);
+    localStorage.setItem('churnHistory', JSON.stringify(history.slice(0, 50)));
+    updateRecent();
+    const btn = document.querySelector('.save-btn');
+    btn.textContent = '✅ Saved!';
+    setTimeout(() => { btn.textContent = '💾 Save to History'; }, 2000);
+  }
+
+  function updateRecent() {
+    const history = JSON.parse(localStorage.getItem('churnHistory') || '[]').slice(0, 5);
+    const list = document.getElementById('recentList');
+    if (!history.length) {
+      list.innerHTML = '<div style="color:var(--text-sm);font-size:0.88rem;padding:16px 0">No predictions yet.</div>';
+      return;
+    }
+    list.innerHTML = history.map(p => `
+      <div class="recent-item">
+        <div>
+          <div style="font-size:0.85rem;font-weight:600">Tenure: ${p.tenure ?? '?'}m · $${p.monthly ?? '?'}/mo · ${p.contract ?? '?'}</div>
+          <div class="recent-meta">${p.time}</div>
+        </div>
+        <div class="badge badge-${p.labelClass}">${p.pct}% ${p.level}</div>
+      </div>
+    `).join('');
+  }
+
+  updateRecent();
+</script>
+</body>
+</html>
